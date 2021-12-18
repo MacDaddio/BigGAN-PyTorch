@@ -1,5 +1,5 @@
 #!/bin/bash
-python train.py \
+python3 train.py \
 --dataset I128_hdf5 --parallel --shuffle  --num_workers 8 --batch_size 64  \
 --num_G_accumulations 1 --num_D_accumulations 1 \
 --num_D_steps 5 --G_lr 2e-4 --D_lr 2e-4 --D_B2 0.900 --G_B2 0.900 \
@@ -12,3 +12,6 @@ python train.py \
  --G_eval_mode \
 --test_every 2000 --save_every 1000 --num_best_copies 5 --num_save_copies 2 --seed 0 \
 --name_suffix SNGAN \
+--data_root /data \
+--load_in_mem \
+--num_epochs 100 \
