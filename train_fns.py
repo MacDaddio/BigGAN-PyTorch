@@ -86,7 +86,9 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
     
     out = {'G_loss': float(G_loss.item()), 
             'D_loss_real': float(D_loss_real.item()),
-            'D_loss_fake': float(D_loss_fake.item())}
+            'D_loss_fake': float(D_loss_fake.item()),
+            'G_lr': float(G.optim.param_groups[0]['lr']),
+            'D_lr': float(D.optim.param_groups[0]['lr']),}
     # Return G's loss and the components of D's loss.
     return out
   return train
