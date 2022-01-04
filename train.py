@@ -1,7 +1,6 @@
 """ BigGAN: The Authorized Unofficial PyTorch release
     Code by A. Brock and A. Andonian
     This code is an unofficial reimplementation of
-    "Large-Scale GAN Training for High Fidelity Natural Image Synthesis,"
     by A. Brock, J. Donahue, and K. Simonyan (arXiv 1809.11096).
 
     Let's go.
@@ -31,7 +30,18 @@ from sync_batchnorm import patch_replication_callback
 
 # The main training file. Config is a dictionary specifying the configuration
 # of this training run.
+
+def get_current_lr(lr, decay, min_val, itr):
+    if itr == 0:
+        return np.max([lr, min_val])
+    else:
+        return np.max([lr / (decay ** itr ), min_val])
+
 def run(config):
+    
+  #Make sure that the learning rate decay is >= 1
+  assert config['G_lr_decay'] >= 1.0, 'Generator learning rate decay (G_lr_decay) must be greater than or equal to 1.0'
+  assert config['D_lr_decay'] >= 1.0, 'Discriminator learning rate decay (D_lr_decay) must be greater than or equal to 1.0'
 
   # Update the config dict as necessary
   # This is for convenience, to add settings derived from the user-specified
@@ -138,7 +148,7 @@ def run(config):
 
   # Prepare noise and randomly sampled label arrays
   # Allow for different batch sizes in G
-  G_batch_size = max(config['G_batch_size'], config['batch_size'])
+  G_batch_size = max(config['G_batch_size'], config['batch_size'], config['inception_batchsize'])
   z_, y_ = utils.prepare_z_y(G_batch_size, G.dim_z, config['n_classes'],
                              device=device, fp16=config['G_fp16'])
   # Prepare a fixed z & y to see individual sample evolution throghout training
@@ -162,7 +172,12 @@ def run(config):
 
   print('Beginning training at epoch %d...' % state_dict['epoch'])
   # Train for specified number of epochs, although we mostly track G iterations.
-  for epoch in range(state_dict['epoch'], config['num_epochs']):    
+  for epoch in range(state_dict['epoch'], config['num_epochs']): 
+    
+    #Show lr
+    print('Glr = ', get_current_lr(config['G_lr'], config['G_lr_decay'], config['G_lr_min'], state_dict['itr']))
+    print('Dlr = ', get_current_lr(config['D_lr'], config['D_lr_decay'], config['D_lr_min'], state_dict['itr']))
+    
     # Which progressbar to use? TQDM or my own?
     if config['pbar'] == 'mine':
       pbar = utils.progress(loaders[0],displaytype='s1k' if config['use_multiepoch_sampler'] else 'eta')
@@ -175,6 +190,13 @@ def run(config):
       # For D, which typically doesn't have BN, this shouldn't matter much.
       G.train()
       D.train()
+      
+      #Set the learning rate
+      for temp in G.optim.param_groups:
+        temp['lr'] = get_current_lr(config['G_lr'], config['G_lr_decay'], config['G_lr_min'], state_dict['itr'])
+      for temp in D.optim.param_groups:
+        temp['lr'] = get_current_lr(config['D_lr'], config['D_lr_decay'], config['D_lr_min'], state_dict['itr'])
+    
       if config['ema']:
         G_ema.train()
       if config['D_fp16']:
