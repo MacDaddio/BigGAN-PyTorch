@@ -150,6 +150,18 @@ def prepare_parser():
     '--D_lr', type=float, default=2e-4,
     help='Learning rate to use for Discriminator (default: %(default)s)')
   parser.add_argument(
+    '--G_lr_decay', type=float, default=1.0,
+    help='Learning rate decay per iteration to use for Generator (default: %(default)s)')
+  parser.add_argument(
+    '--D_lr_decay', type=float, default=1.0,
+    help='Learning rate decay per iteraton to use for Discriminator (default: %(default)s)')
+  parser.add_argument(
+    '--G_lr_min', type=float, default=5e-5,
+    help='Minimum learning rate to use for Generator (default: %(default)s)')
+  parser.add_argument(
+    '--D_lr_min', type=float, default=2e-4,
+    help='Minimum learning rate to use for Discriminator (default: %(default)s)')
+  parser.add_argument(
     '--G_B1', type=float, default=0.0,
     help='Beta1 to use for Generator (default: %(default)s)')
   parser.add_argument(
@@ -161,6 +173,9 @@ def prepare_parser():
   parser.add_argument(
     '--D_B2', type=float, default=0.999,
     help='Beta2 to use for Discriminator (default: %(default)s)')
+    
+    
+    
     
   ### Batch size, parallel, and precision stuff ###
   parser.add_argument(
@@ -183,6 +198,9 @@ def prepare_parser():
   parser.add_argument(
     '--split_D', action='store_true', default=False,
     help='Run D twice rather than concatenating inputs? (default: %(default)s)')
+  parser.add_argument(
+    '--inception_batchsize', type=int, default=0,
+    help='Batch size to use for calculating inception metrics; if 0, ignored (default: %(default)s)')
   parser.add_argument(
     '--num_epochs', type=int, default=100,
     help='Number of epochs to train for (default: %(default)s)')
@@ -405,28 +423,53 @@ dset_dict = {'I32': dset.ImageFolder, 'I64': dset.ImageFolder,
              'I128': dset.ImageFolder, 'I256': dset.ImageFolder,
              'I32_hdf5': dset.ILSVRC_HDF5, 'I64_hdf5': dset.ILSVRC_HDF5, 
              'I128_hdf5': dset.ILSVRC_HDF5, 'I256_hdf5': dset.ILSVRC_HDF5,
-             'C10': dset.CIFAR10, 'C100': dset.CIFAR100}
+             'C10': dset.CIFAR10, 'C100': dset.CIFAR100,
+             'I128_SUB_22_263_280_288_404_532_574_661_717_980': dset.ImageFolder,
+             'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': dset.ILSVRC_HDF5,
+             'celeba_32_cc_gray': dset.ImageFolder,
+             'celeba_64_cc': dset.ImageFolder,
+             'celeba_32_cc': dset.ImageFolder}
 imsize_dict = {'I32': 32, 'I32_hdf5': 32,
                'I64': 64, 'I64_hdf5': 64,
                'I128': 128, 'I128_hdf5': 128,
                'I256': 256, 'I256_hdf5': 256,
-               'C10': 32, 'C100': 32}
+               'C10': 32, 'C100': 32,
+               'I128_SUB_22_263_280_288_404_532_574_661_717_980': 128,
+               'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 128,
+               'celeba_32_cc_gray': 32,
+               'celeba_32_cc': 32,
+               'celeba_64_cc': 64}
 root_dict = {'I32': 'ILSVRC2012/train', 'I32_hdf5': 'ILSVRC32.hdf5',
              'I64': 'ILSVRC2012/train', 'I64_hdf5': 'ILSVRC64.hdf5',
              'I128': 'ILSVRC2012/train', 'I128_hdf5': 'ILSVRC128.hdf5',
              'I256': 'ILSVRC2012/train', 'I256_hdf5': 'ILSVRC256.hdf5',
-             'C10': 'cifar', 'C100': 'cifar'}
+             'C10': 'cifar', 'C100': 'cifar',
+             'I128_SUB_22_263_280_288_404_532_574_661_717_980': 'ILSVRC2012_SUB_22_263_280_288_404_532_574_661_717_980/train',
+             'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 'I128_SUB_22_263_280_288_404_532_574_661_717_980.hdf5',
+             'celeba_32_cc_gray': 'celeba_32_cc_gray',
+             'celeba_32_cc': 'celeba_32_cc',
+             'celeba_64_cc': 'celeba_64_cc'}
 nclass_dict = {'I32': 1000, 'I32_hdf5': 1000,
                'I64': 1000, 'I64_hdf5': 1000,
                'I128': 1000, 'I128_hdf5': 1000,
                'I256': 1000, 'I256_hdf5': 1000,
-               'C10': 10, 'C100': 100}
+               'C10': 10, 'C100': 100,
+               'I128_SUB_22_263_280_288_404_532_574_661_717_980': 10,
+               'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 10,
+               'celeba_32_cc_gray': 1,
+               'celeba_32_cc': 1,
+               'celeba_64_cc': 1}
 # Number of classes to put per sample sheet               
 classes_per_sheet_dict = {'I32': 50, 'I32_hdf5': 50,
                           'I64': 50, 'I64_hdf5': 50,
                           'I128': 20, 'I128_hdf5': 20,
                           'I256': 20, 'I256_hdf5': 20,
-                          'C10': 10, 'C100': 100}
+                          'C10': 10, 'C100': 100,
+                          'I128_SUB_22_263_280_288_404_532_574_661_717_980': 10,
+                          'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 10,
+                          'celeba_32_cc_gray': 1,
+                          'celeba_32_cc': 1,
+                          'celeba_64_cc': 1}
 activation_dict = {'inplace_relu': nn.ReLU(inplace=True),
                    'relu': nn.ReLU(inplace=False),
                    'ir': nn.ReLU(inplace=True),}
@@ -992,6 +1035,10 @@ def name_from_config(config):
   'nGa%d' % config['num_G_accumulations'] if config['num_G_accumulations'] > 1 else None,
   'Glr%2.1e' % config['G_lr'],
   'Dlr%2.1e' % config['D_lr'],
+  'GlrDecay%f' % config['G_lr_decay'] if config['G_lr_decay'] > 1.0 else None,
+  'DlrDecay%f' % config['D_lr_decay'] if config['D_lr_decay'] > 1.0 else None,
+  'GlrMin%2.1e' % config['G_lr_min'] if config['G_lr_min'] != 5e-5 else None,
+  'DlrMin%2.1e' % config['D_lr_min'] if config['D_lr_min'] != 2e-4 else None,
   'GB%3.3f' % config['G_B1'] if config['G_B1'] !=0.0 else None,
   'GBB%3.3f' % config['G_B2'] if config['G_B2'] !=0.999 else None,
   'DB%3.3f' % config['D_B1'] if config['D_B1'] !=0.0 else None,
