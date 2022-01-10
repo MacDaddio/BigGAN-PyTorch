@@ -428,7 +428,9 @@ dset_dict = {'I32': dset.ImageFolder, 'I64': dset.ImageFolder,
              'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': dset.ILSVRC_HDF5,
              'celeba_32_cc_gray': dset.ImageFolder,
              'celeba_64_cc': dset.ImageFolder,
-             'celeba_32_cc': dset.ImageFolder}
+             'celeba_32_cc': dset.ImageFolder,
+             'celeba_32_cc_SUB10000': dset.ImageFolder,
+             'celeba_64_cc_SUB10000': dset.ImageFolder}
 imsize_dict = {'I32': 32, 'I32_hdf5': 32,
                'I64': 64, 'I64_hdf5': 64,
                'I128': 128, 'I128_hdf5': 128,
@@ -438,7 +440,9 @@ imsize_dict = {'I32': 32, 'I32_hdf5': 32,
                'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 128,
                'celeba_32_cc_gray': 32,
                'celeba_32_cc': 32,
-               'celeba_64_cc': 64}
+               'celeba_64_cc': 64,
+               'celeba_32_cc_SUB10000': 32,
+               'celeba_64_cc_SUB10000': 64}
 root_dict = {'I32': 'ILSVRC2012/train', 'I32_hdf5': 'ILSVRC32.hdf5',
              'I64': 'ILSVRC2012/train', 'I64_hdf5': 'ILSVRC64.hdf5',
              'I128': 'ILSVRC2012/train', 'I128_hdf5': 'ILSVRC128.hdf5',
@@ -448,7 +452,9 @@ root_dict = {'I32': 'ILSVRC2012/train', 'I32_hdf5': 'ILSVRC32.hdf5',
              'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 'I128_SUB_22_263_280_288_404_532_574_661_717_980.hdf5',
              'celeba_32_cc_gray': 'celeba_32_cc_gray',
              'celeba_32_cc': 'celeba_32_cc',
-             'celeba_64_cc': 'celeba_64_cc'}
+             'celeba_64_cc': 'celeba_64_cc',
+             'celeba_32_cc_SUB10000': 'celeba_32_cc_SUB10000',
+             'celeba_64_cc_SUB10000': 'celeba_64_cc_SUB10000'}
 nclass_dict = {'I32': 1000, 'I32_hdf5': 1000,
                'I64': 1000, 'I64_hdf5': 1000,
                'I128': 1000, 'I128_hdf5': 1000,
@@ -458,7 +464,9 @@ nclass_dict = {'I32': 1000, 'I32_hdf5': 1000,
                'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 10,
                'celeba_32_cc_gray': 1,
                'celeba_32_cc': 1,
-               'celeba_64_cc': 1}
+               'celeba_64_cc': 1,
+               'celeba_32_cc_SUB10000': 1,
+               'celeba_64_cc_SUB10000': 1}
 # Number of classes to put per sample sheet               
 classes_per_sheet_dict = {'I32': 50, 'I32_hdf5': 50,
                           'I64': 50, 'I64_hdf5': 50,
@@ -469,7 +477,9 @@ classes_per_sheet_dict = {'I32': 50, 'I32_hdf5': 50,
                           'I128_SUB_22_263_280_288_404_532_574_661_717_980_hdf5': 10,
                           'celeba_32_cc_gray': 1,
                           'celeba_32_cc': 1,
-                          'celeba_64_cc': 1}
+                          'celeba_64_cc': 1,
+                          'celeba_32_cc_SUB10000': 1,
+                          'celeba_64_cc_SUB10000': 1}
 activation_dict = {'inplace_relu': nn.ReLU(inplace=True),
                    'relu': nn.ReLU(inplace=False),
                    'ir': nn.ReLU(inplace=True),}
