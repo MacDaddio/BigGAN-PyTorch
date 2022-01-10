@@ -173,11 +173,6 @@ def run(config):
   print('Beginning training at epoch %d...' % state_dict['epoch'])
   # Train for specified number of epochs, although we mostly track G iterations.
   for epoch in range(state_dict['epoch'], config['num_epochs']): 
-    
-    #Show lr
-    print('Glr = ', get_current_lr(config['G_lr'], config['G_lr_decay'], config['G_lr_min'], state_dict['itr']))
-    print('Dlr = ', get_current_lr(config['D_lr'], config['D_lr_decay'], config['D_lr_min'], state_dict['itr']))
-    
     # Which progressbar to use? TQDM or my own?
     if config['pbar'] == 'mine':
       pbar = utils.progress(loaders[0],displaytype='s1k' if config['use_multiepoch_sampler'] else 'eta')
@@ -214,8 +209,8 @@ def run(config):
       # If using my progbar, print metrics.
       if config['pbar'] == 'mine':
           print(', '.join(['itr: %d' % state_dict['itr']] 
-                           + ['%s : %+4.3f' % (key, metrics[key])
-                           for key in metrics]), end=' ')
+                           + ['%s : %+4.2f' % (key, metrics[key]) for key in metrics][0:3] 
+                           + ['%s : %4.1e' % (key, metrics[key]) for key in metrics][3:5]   ), end=' ')
 
       # Save weights and copies as configured at specified interval
       if not (state_dict['itr'] % config['save_every']):
