@@ -1040,6 +1040,7 @@ def name_from_config(config):
   'bs%d' % config['batch_size'],
   'Gfp16' if config['G_fp16'] else None,
   'Dfp16' if config['D_fp16'] else None,
+  'dimz%d' % config['dim_z'] if config['dim_z'] != 128 else None,
   'nDs%d' % config['num_D_steps'] if config['num_D_steps'] > 1 else None,
   'nDa%d' % config['num_D_accumulations'] if config['num_D_accumulations'] > 1 else None,
   'nGa%d' % config['num_G_accumulations'] if config['num_G_accumulations'] > 1 else None,
