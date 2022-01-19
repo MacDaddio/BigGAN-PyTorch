@@ -347,6 +347,9 @@ def prepare_parser():
   parser.add_argument(
     '--which_train_fn', type=str, default='GAN',
     help='How2trainyourbois (default: %(default)s)')  
+  parser.add_argument(
+    '--nps', type=int, default=-1,
+    help='Number of pseudo-supervised samples, used only for PS training. nps=-1 uses all the data. (default: %(default)s)')  
   
   ### Resume training stuff
   parser.add_argument(
@@ -1024,7 +1027,6 @@ def get_SVs(net, prefix):
             float(d[key].item())
             for key in d if 'sv' in key}
 
-
 # Name an experiment based on its config
 def name_from_config(config):
   name = '_'.join([
@@ -1058,6 +1060,7 @@ def name_from_config(config):
   'Dnl%s' % config['D_nl'],
   'Ginit%s' % config['G_init'],
   'Dinit%s' % config['D_init'],
+  'nps%d' % config['nps'] if config['nps'] != -1 else None,
   'G%s' % config['G_param'] if config['G_param'] != 'SN' else None,
   'D%s' % config['D_param'] if config['D_param'] != 'SN' else None,
   'Gattn%s' % config['G_attn'] if config['G_attn'] != '0' else None,

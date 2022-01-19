@@ -28,6 +28,9 @@ def loss_hinge_gen(dis_fake):
   loss = -torch.mean(dis_fake)
   return loss
 
+#PS Loss
+loss_PS = torch.nn.MSELoss()
+
 # Default to hinge loss
 generator_loss = loss_hinge_gen
 discriminator_loss = loss_hinge_dis

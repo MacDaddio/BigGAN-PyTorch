@@ -43,6 +43,13 @@ def run(config):
   assert config['G_lr_decay'] >= 1.0, 'Generator learning rate decay (G_lr_decay) must be greater than or equal to 1.0'
   assert config['D_lr_decay'] >= 1.0, 'Discriminator learning rate decay (D_lr_decay) must be greater than or equal to 1.0'
 
+  #Make sure nDs is 1 if PS training
+#   if config['which_train_fn'] == 'PS':
+#     assert config['num_D_steps'] == 1, 'num_D_steps must be equal to 1 for PS training.'
+
+  #Make sure nps is -1 or greater than 0
+  assert config['nps'] == -1 or config['nps'] > 0, 'nps must be -1 (default) or positive.'
+
   # Update the config dict as necessary
   # This is for convenience, to add settings derived from the user-specified
   # configuration into the config-dict (e.g. inferring the number of classes
@@ -142,6 +149,10 @@ def run(config):
                   * config['num_D_accumulations'])
   loaders = utils.get_data_loaders(**{**config, 'batch_size': D_batch_size,
                                       'start_itr': state_dict['itr']})
+    
+  # Set nps equal to the length of the data if
+  if config['nps'] == -1:
+    config['nps'] = len(loaders[0].dataset)
 
   # Prepare inception metrics: FID and IS
   get_inception_metrics = inception_utils.prepare_inception_metrics(config['dataset'], config['parallel'], config['no_fid'])
@@ -161,6 +172,18 @@ def run(config):
   if config['which_train_fn'] == 'GAN':
     train = train_fns.GAN_training_function(G, D, GD, z_, y_, 
                                             ema, state_dict, config)
+  # If doing pseudosupervised training
+  elif config['which_train_fn'] == 'PS':
+#     train = train_fns.GAN_training_function_PS(G, config)
+    train = train_fns.GAN_training_function_with_PS(G, D, GD, z_, y_, 
+                                                    ema, state_dict, config)
+    z_ps  = torch.randn(config['dim_z'], len(loaders[0].dataset)).T.to(device) # The transpose part makes the z's consistent across experiments
+    
+    #Fill the z_ps variable with n-nps nans indicating which variables don't have nans
+    if len(loaders[0].dataset) - config['nps'] > 0:
+        ind       = torch.randperm(len(loaders[0].dataset))[0:(len(loaders[0].dataset) - config['nps'])]
+        z_ps[ind] = float('nan') 
+    
   # Else, assume debugging and use the dummy train fn
   else:
     train = train_fns.dummy_training_function()
@@ -198,7 +221,13 @@ def run(config):
         x, y = x.to(device).half(), y.to(device)
       else:
         x, y = x.to(device), y.to(device)
-      metrics = train(x, y)
+      if config['which_train_fn'] == 'PS':
+        i_start = i       * config['batch_size'] * config['num_G_accumulations']
+        i_end   = (i + 1) * config['batch_size'] * config['num_G_accumulations']
+#         metrics = train(x,y,z_ps[i_start:i_end,:])
+        metrics = train(x,y,z_ps)
+      else:
+        metrics = train(x, y)
       train_log.log(itr=int(state_dict['itr']), **metrics)
       
       # Every sv_log_interval, log singular values
@@ -208,7 +237,7 @@ def run(config):
 
       # If using my progbar, print metrics.
       if config['pbar'] == 'mine':
-          print(', '.join(['itr: %d' % state_dict['itr']] 
+          print(', '.join(['            itr: %d' % state_dict['itr']] 
                            + ['%s : %+4.2f' % (key, metrics[key]) for key in metrics][0:3] 
                            + ['%s : %4.1e' % (key, metrics[key]) for key in metrics][3:5]   ), end=' ')
 
